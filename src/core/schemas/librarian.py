@@ -102,6 +102,7 @@ class UpdateLibrarian(BaseModel):
     name: Optional[str] = Field(None, min_length=2, max_length=50)
     email: Optional[EmailStr] = None
 
+
 class LibrarianTokenResponse(BaseModel):
     """
     Модель ответа с JWT-токеном после успешной аутентификации.
@@ -125,3 +126,7 @@ class LibrarianTokenResponse(BaseModel):
     """
     access_token: str
     token_type: str = "bearer"
+
+class LibrarianTokenData(BaseModel):
+    id: int | None = None
+    role: str | None = None

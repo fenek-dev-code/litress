@@ -12,6 +12,7 @@ class Librarian(Base):
     password_hash: Mapped[bytes] = mapped_column(LargeBinary(60), nullable=False)
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
     readers: Mapped[list["Reader"]] = relationship(back_populates="librarian") # type: ignore
+    issued_books = relationship("BorrowRecord", back_populates="librarian")
 
     __table_args__ = (
         {'sqlite_autoincrement': True}
