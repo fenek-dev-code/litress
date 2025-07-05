@@ -10,7 +10,7 @@ class Reader(Base):
     Модель читателя/пользователя библиотеки.
     Содержит информацию о читателе и его связях с книгами и библиотекарями.
     """
-    __tablename__ = "readers"  # Название таблицы в базе данных
+    __tablename__ = "readers" 
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     """

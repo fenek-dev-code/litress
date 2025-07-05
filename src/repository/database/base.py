@@ -1,5 +1,9 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from typing import Generic, TypeVar
+from sqlalchemy import select, delete
+from typing import Generic, TypeVar, Optional
+import logging
+
+from repository.exception import NotFoundException
 
 ModelType = TypeVar("ModelType")
 
@@ -7,3 +11,21 @@ class BaseRepository(Generic[ModelType]):
     def __init__(self, model: type[ModelType], session: AsyncSession):
         self.model = model
         self.session = session
+        self.logger = logging.getLogger(__name__)
+
+    async def get(self, id: int) -> ModelType | None:
+        return await self.session.get(self.model, id)
+    
+    async def get_by_email(self, email: str) -> ModelType | None:
+        result = await self.session.execute(
+            select(self.model).where(self.model.email == email)
+        )
+        return result.scalar_one_or_none()
+    
+    async def delete(self, id: int):
+        result = await self.session.execute(
+            delete(self.model).where(self.model.id == id)
+        )
+        if result.rowcount == 0:
+            raise NotFoundException(f"{self.model.__name__} {id} not found")
+        return True
