@@ -1,11 +1,11 @@
 from fastapi import APIRouter, status, HTTPException, Depends
-from api.deps import get_book_db, get_librarian_db
+from api.deps import book_service, librarian_service
 from core.schemas.librarian import LogInLibrarian, LibrarianTokenResponse, ResponseLibrarian, RegisterLibrarian
-from core.schemas.reader import CreateReader, ResponseReader
-from core.models.librarian import Librarian
-from core.models.reader import Reader
-from repository.database.librarian import LibrarianRepository
-from repository.exception import NotFoundException, ConflictException, DataBaseErrorExceprion, LibraryException, UnauthorizedException
+from core.schemas.reader import CreateReader, ResponseReader, UpdateReader, ShortReaderResponse
+from repository.exception import ConflictException, BaseException, NotFoundException, UnauthorizedException, LimmitException
+
+
+
 from utils.auth_jwt import encode_jwt
 
 router = APIRouter(
@@ -19,16 +19,9 @@ router = APIRouter(
 )
 async def create_librarian(
     user: RegisterLibrarian,
-    db: LibrarianRepository = Depends(get_librarian_db)
+   
 ):
-    try:
-        new_user = await db.create_librarian(Librarian(**user.dict()))
-        return ResponseLibrarian.from_orm(new_user)
-    except ConflictException as e:
-        HTTPException(
-            status_code=e.status_code,
-            detail="Email is busy"
-        )
+    pass 
 
 @router.post(
     "/token",
@@ -37,18 +30,9 @@ async def create_librarian(
 )
 async def login_user(
     user: LogInLibrarian,
-    db: LibrarianRepository = Depends(get_librarian_db)
+    
 ):
-    try:
-        user = await db.login_librarian(user.email, user.password)
-        return LibrarianTokenResponse(access_token=encode_jwt(
-            {"sub": str(user.id)}
-        ))
-    except Exception:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="login or password incorect"
-        )
+    pass
     
 @router.post(
     "/reader",
@@ -56,6 +40,6 @@ async def login_user(
 )
 async def create_reader(
     reader: CreateReader,
-    db: LibrarianRepository = Depends()
+    service = Depends(book_service)
 ):
     pass

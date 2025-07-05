@@ -9,27 +9,19 @@ from repository import exception
 
 class LibrarianRepository(BaseRepository[Librarian]):
 
-    async def create_librarian(self, librarian: Librarian):
-        existing = await self.get_librarian_by_email(librarian.email)
+    async def create_librarian(self, email: str, passowrd: str):
+        existing = await self.get_by_email(email)
         if existing:
             raise exception.ConflictException
-        
-        librarian.password_hash = hash_password(librarian.password_hash)
-        
+        librarian = Librarian(
+            email=email,
+            password_hash=passowrd
+        )
         async with self.session.begin():
             self.session.add(librarian)
             await self.session.flush()
             self.logger.info(f"Created librarian {librarian.id}")
             return librarian
-
-    async def authenticate(self, email: str, password: str) -> Librarian:
-        librarian = await self.get_by_email(email=email)
-        if not librarian:
-            raise exception.ClientException
-        if not verefy_passowrd(password, librarian.password_hash):
-            raise exception.ClientException
-        return librarian
-
         
     async def get_with_readers(self, librarian_id: int):
         try:

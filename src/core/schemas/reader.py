@@ -83,3 +83,9 @@ class ShortReaderResponse(BaseModel):
     """
     reader_id: int
     name: str
+
+class ReaderWithBooksResponse(BaseModel):
+    id: int
+    name: str
+    email: str
+    borrow_records: List["BorrowRecordResponse"] = []  
