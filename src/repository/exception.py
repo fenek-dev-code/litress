@@ -1,37 +1,24 @@
-class NotFoundException(Exception):
-    """"""
-
-class BookException(Exception):
-    """Base exception for book opperations"""
+class BaseException(Exception):
+    """Base Exception"""
     status_code: int = 500
+    msg: str = "Server Error"
 
-class BookNotFound(BaseException):
+class NotFoundException(BaseException):
     status_code: int = 404
+    msg: str = "Not found result"
 
+class ConflictException(BaseException):
+    status_code: int = 409
+    msg: str = "Conflict Error"
 
-class LibraryException(Exception):
-    """Base exception for library operations"""
-    status_code: int = 500
+class LimmitException(BaseException):
+    status_code: int = 409
+    msg: str = "Limited"
 
-class NotFoundException(LibraryException):
-    status_code = 404
-
-class ConflictException(LibraryException):
-    status_code = 409
-
-class DataBaseErrorExceprion(LibraryException):
-    status_code = 500
-
-class UnauthorizedException(LibraryException):
+class UnauthorizedException(BaseException):
     status_code: int = 401
+    msg: str = "User not authorize"
 
-
-class ReaderException(Exception):
-    """Base exception for reader operations """
-    status_code: int = 500
-
-class ReaderNotFound(ReaderException):
-    status_code: int = 404
-
-class ReaderConflict(ReaderException):
+class ClientException(BaseException):
     status_code: int = 400
+    msg: str = "Bad request"

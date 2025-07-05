@@ -23,9 +23,10 @@ class BaseRepository(Generic[ModelType]):
         return result.scalar_one_or_none()
     
     async def delete(self, id: int):
-        result = await self.session.execute(
-            delete(self.model).where(self.model.id == id)
-        )
-        if result.rowcount == 0:
-            raise NotFoundException(f"{self.model.__name__} {id} not found")
-        return True
+        async with self.session.begin():
+            result = await self.session.execute(
+                delete(self.model).where(self.model.id == id)
+            )
+            if result.rowcount == 0:
+                raise NotFoundException(f"{self.model.__name__} {id} not found")
+            return True

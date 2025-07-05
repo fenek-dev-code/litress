@@ -5,14 +5,14 @@ from utils.auth_jwt import hash_password, verefy_passowrd
 
 from .base import BaseRepository
 from core.models.librarian import Librarian
-from repository.exception import NotFoundException, ConflictException, UnauthorizedException, DataBaseErrorExceprion
+from repository import exception
 
 class LibrarianRepository(BaseRepository[Librarian]):
 
     async def create_librarian(self, librarian: Librarian):
         existing = await self.get_librarian_by_email(librarian.email)
         if existing:
-            raise ConflictException()
+            raise exception.ConflictException
         
         librarian.password_hash = hash_password(librarian.password_hash)
         
@@ -23,13 +23,13 @@ class LibrarianRepository(BaseRepository[Librarian]):
             return librarian
 
     async def authenticate(self, email: str, password: str) -> Librarian:
-        try:
-            librarian = await self.get_librarian_by_email(email)
-            if not verefy_passowrd(password, librarian.password_hash):
-                raise UnauthorizedException("Invalid credentials") 
-            return librarian
-        except NotFoundException:
-            raise UnauthorizedException("Invalid credentials")
+        librarian = await self.get_by_email(email=email)
+        if not librarian:
+            raise exception.ClientException
+        if not verefy_passowrd(password, librarian.password_hash):
+            raise exception.ClientException
+        return librarian
+
         
     async def get_with_readers(self, librarian_id: int):
         try:
@@ -39,8 +39,8 @@ class LibrarianRepository(BaseRepository[Librarian]):
                 .options(selectinload(Librarian.readers))
             )).scalar_one_or_none()
             if not result:
-                raise NotFoundException
+                raise exception.NotFoundException
             return result
         
         except SQLAlchemyError:
-            raise DataBaseErrorExceprion
+            raise exception.BaseException

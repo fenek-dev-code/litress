@@ -1,11 +1,11 @@
 from datetime import datetime
 from sqlalchemy import select, func, delete
 from sqlalchemy.orm import selectinload
-from sqlalchemy.exc import SQLAlchemyError, NoResultFound
+from sqlalchemy.exc import SQLAlchemyError
 from core.models.book import Book
 from core.models.order import BorrowRecord
 from .base import BaseRepository
-from repository.exception import BookNotFound, NotFoundException, DataBaseErrorExceprion, ConflictException, DataBaseErrorExceprion
+from repository import exception
 
 
 class BookRepository(BaseRepository[Book]):
@@ -19,24 +19,24 @@ class BookRepository(BaseRepository[Book]):
                 return new_book
         except SQLAlchemyError as e:
             self.logger.error(f"Ошибка при создание книги: {e}")
-            raise DataBaseErrorExceprion("Failed to create book")
+            raise exception.BaseException
 
-    async def get_book_by_id(self, book_id: int) -> Book:
+    async def get_books(self, offset: int, limit: int):
         try:
-            book = await self.session.get(Book, book_id)
-            if not book:
-                raise NotFoundException(f"Book {book_id} not found")
-            return book
-        except SQLAlchemyError as e:
-            self.logger.error(f"DB error fetching book {book_id}: {e}")
-            raise DataBaseErrorExceprion("Database operation failed")
+            books = (await self.session.execute(
+                select(Book).offset(offset=offset).limit(limit=limit)
+            )).scalars().all()
+            return books
+        except SQLAlchemyError as err:
+            self.logger.error(f"Ошибки при получении книг: {err}")
+            raise exception.BaseException
 
     async def update_book(self, data: dict, book_id: int) -> Book:
         try:
             async with self.session.begin():
                 book = await self.session.get(Book, book_id)
                 if not book:
-                    raise NotFoundException(f"Book {book_id} not found")
+                    raise exception.NotFoundException(msg=f"Book {book_id} not found")
 
                 for key, value in data.items():
                     if hasattr(book, key):
@@ -48,20 +48,7 @@ class BookRepository(BaseRepository[Book]):
                 
         except SQLAlchemyError as e:
             self.logger.error(f"Error updating book {book_id}: {e}")
-            raise DataBaseErrorExceprion("Update operation failed")
-
-    async def delete_book(self, book_id: int) -> None:
-        try:
-            async with self.session.begin():
-                result = await self.session.execute(
-                    delete(Book).where(Book.id == book_id)
-                )
-                if result.rowcount == 0:
-                    raise NotFoundException(f"Book {book_id} not found")
-                self.logger.info(f"Book {book_id} deleted")
-        except SQLAlchemyError as e:
-            self.logger.error(f"Error deleting book {book_id}: {e}")
-            raise DataBaseErrorExceprion("Delete operation failed")
+            raise exception.BaseException
 
     async def get_book_with_borrow(self, book_id: int):
         result = (await self.session.execute(
@@ -72,7 +59,7 @@ class BookRepository(BaseRepository[Book]):
             )
         )).scalars().first()
         if not result:
-            raise BookNotFound
+            raise exception.NotFoundException
         return result
 
     async def surch_book(
@@ -101,18 +88,19 @@ class BookRepository(BaseRepository[Book]):
             async with self.session.begin():
                 book = await self.session.get(Book, book_id)
                 if not book:
-                    raise NotFoundException("Книга не найдена")
+                    raise exception.NotFoundException("Книга не найдена")
                 if book.copies < 1:
-                    raise NotFoundException("Нет доступных экземпляров этой книги")
+                    raise exception.NotFoundException("Нет доступных экземпляров этой книги")
                 
-                active_borrows = (await self.session.execute(
-                    select(func.count()).where(
-                    BorrowRecord.reader_id == reader_id,
-                    BorrowRecord.return_date.is_(None)
-                ))).scalar()
+                active_borrows = await self.session.scalar(
+                    select(func.count(BorrowRecord.id)).where(
+                        BorrowRecord.reader_id == reader_id, 
+                        BorrowRecord.return_date.is_(None)
+                    )
+                )
 
                 if active_borrows >= 3:
-                    raise ConflictException("Читатель уже имеет максимальное количество книг (3)")
+                    raise exception.LimmitException
                 
                 record = BorrowRecord(
                     book_id=book_id,
@@ -127,13 +115,12 @@ class BookRepository(BaseRepository[Book]):
                 await self.session.flush()
                 self.logger.info()
                 return record
-        except NoResultFound as e:
-            self.logger.error(f"Ошибка при выдаче книги {book_id} читателю {reader_id}")
-            raise DataBaseErrorExceprion("")
+        except (exception.NotFoundException, exception.LimmitException):
+            raise
 
         except SQLAlchemyError as e:
             self.logger.error(f"DB Ошибка при выдаче книги ! \nBook_id: {book_id} \nReder_id:{reader_id} \nLibrarian_id: {librarian_id} {str(e)}")
-            raise
+            raise exception.BaseException
 
     async def return_book(
         self, 
@@ -145,7 +132,7 @@ class BookRepository(BaseRepository[Book]):
             async with self.session.begin():
                 book = await self.session.get(Book, book_id)
                 if not book:
-                    raise NotFoundException()
+                    raise exception.NotFoundException()
                 order = (await self.session.execute( 
                     select(BorrowRecord).where(
                         BorrowRecord.book_id == book_id,
@@ -160,4 +147,4 @@ class BookRepository(BaseRepository[Book]):
                 self.logger.info(f"Книга {book_id} успешно возвращена читателем {reader_id}")
         except SQLAlchemyError as e:
             self.logger.error(f"При возрате книги {book_id} читателем {reader_id} произошла ошибка: {e}")
-            raise DataBaseErrorExceprion()
+            raise exception.BaseException

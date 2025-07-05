@@ -54,16 +54,3 @@ class ReaderRepository(BaseRepository):
         )) 
         return result or 0
             
-    
-    async def delete_reader(self, reader_id: int): 
-        try:
-            async with self.session.begin():
-                result = await self.session.execute(
-                    delete(Reader).filter(Reader.id == reader_id)
-                )
-                if result.rowcount == 0:
-                    raise ReaderNotFound
-                self.logger.info(f"Читатель {reader_id} был удалён")
-        except SQLAlchemyError as err:
-            self.logger.error(f"При удаление читателя {reader_id} возникла ошибка: {err}")
-            raise ReaderException

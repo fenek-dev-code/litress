@@ -8,7 +8,7 @@ class BorrowRecordBase(BaseModel):
     reader_id: int = Field(..., example=1, description="ID читателя")
 
 class BorrowRecordCreate(BorrowRecordBase):
-    pass  # Можно добавить дополнительные поля при необходимости
+    librarian_id: int = Field(..., examples=1, description="ID библиотекоря")
 
 class BorrowRecordReturn(BaseModel):
     record_id: int = Field(..., example=1, description="ID записи о выдаче")
