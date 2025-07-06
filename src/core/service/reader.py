@@ -17,3 +17,4 @@ class ReaderService:
     async def get_with_borrow_books(self, reader_id: int):
         reader = await self.repo.get_with_borrowed_books(reader_id=reader_id)
         return ReaderWithBooksResponse.model_validate(reader)
+    

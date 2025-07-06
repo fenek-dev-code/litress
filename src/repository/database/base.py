@@ -17,10 +17,12 @@ class BaseRepository(Generic[ModelType]):
         return await self.session.get(self.model, id)
     
     async def get_by_email(self, email: str) -> ModelType | None:
-        result = await self.session.execute(
+        result = (await self.session.execute(
             select(self.model).where(self.model.email == email)
-        )
-        return result.scalar_one_or_none()
+        )).scalar_one_or_none()
+        if not result:
+            raise NotFoundException
+        return result 
     
     async def delete(self, id: int):
         async with self.session.begin():

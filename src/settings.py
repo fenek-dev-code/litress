@@ -2,7 +2,7 @@ from pydantic_settings import BaseSettings
 from pydantic import BaseModel
 from pathlib import Path
 
-BASE_DIR = Path(__file__).parent.parent.parent
+BASE_DIR = Path(__file__).parent.parent
 
 class JWTConfig(BaseModel):
     public_key: Path = BASE_DIR / "secret" / "jwt-public.pem" 
