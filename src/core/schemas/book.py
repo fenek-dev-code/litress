@@ -109,8 +109,8 @@ class UpdateBook(BaseModel):
     """
     title: Optional[str] = Field(None, min_length=2, max_length=200)
     author: Optional[str] = Field(None, min_length=2, max_length=100)
-    pub_year: Optional[conint(ge=1800, le=datetime.now().year)] = None # type: ignore
-    copies: Optional[conint(ge=1, le=1000)] = None # type: ignore
+    pub_year: Optional[int] = Field(None, ge=1800, le=datetime.now().year)
+    copies: Optional[int] = Field(None, ge=1, le=1000)
 
 class BookSearchFilters(BaseModel):
     """

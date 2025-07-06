@@ -1,6 +1,6 @@
 from repository.database.reader import ReaderRepository
 from core.models.reader import Reader
-from core.schemas.reader import ShortReaderResponse, CreateReader, ResponseReade, ReaderWithBooksResponse
+from core.schemas.reader import ShortReaderResponse, CreateReader, ResponseReader, ReaderWithBooksResponse
 
 class ReaderService:
     def __init__(self, session):

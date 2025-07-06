@@ -4,7 +4,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from api.deps import book_service, librarian_service, reader_service, currnet_user
 from core.schemas.token import Token, TokenData
 from core.schemas.librarian import LogInLibrarian,  ResponseLibrarian, RegisterLibrarian
-from core.schemas.reader import CreateReader, ResponseReader, UpdateReader, ShortReaderResponse
+from core.schemas.reader import CreateReader, ResponseReader, UpdateReader, ShortReaderResponse, ReaderWithBooksResponse
 from repository.exception import ConflictException, BaseException, NotFoundException, UnauthorizedException, LimmitException, ClientException
 
 from core.service.librarian import LibrarianService
@@ -13,7 +13,7 @@ from core.service.reader import ReaderService
 from utils.auth_jwt import encode_jwt
 
 router = APIRouter(
-    prefix='auth',
+    prefix='/auth',
     tags=['Auth']
 )
 
@@ -89,7 +89,7 @@ async def get_reader(
     reader_id: int,
     service: ReaderService = Depends(reader_service),
     token_data: TokenData = Depends(currnet_user)
-) -> ResponseReader:
+) -> ReaderWithBooksResponse:
     try:
         result = await service.get_with_borrow_books(reader_id=reader_id)
         return result

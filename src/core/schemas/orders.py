@@ -18,6 +18,7 @@ class BorrowRecordResponse(BorrowRecordBase):
     borrow_date: datetime = Field(...,)
     return_date: datetime | None = None
 
+
 class BorrowRecordFilter(BaseModel):
     """Параметры фильтрации для поиска записей"""
     book_id: Optional[int] = None
