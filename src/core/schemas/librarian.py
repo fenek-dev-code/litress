@@ -66,6 +66,12 @@ class UpdateLibrarian(BaseModel):
         example="new.email@example.com",
         description="Новый рабочий email"
     )
+    passord: Optional[str] = Field(
+        ..., 
+        min_length=8,
+        example="SecureP@ss123",
+        description="Пароль длиной не менее 8 символов"
+    )
 
 
 class LibrarianWithReadersResponse(ShortLibrarianResponse):

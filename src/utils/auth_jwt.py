@@ -61,7 +61,6 @@ def verefy_passowrd(
         return False
     
     try:
-        # Преобразуем в bytes если нужно
         pw_bytes = payload_password.encode('utf-8') if isinstance(payload_password, str) else payload_password
         hash_bytes = hashed_password.encode('utf-8') if isinstance(hashed_password, str) else hashed_password
         

@@ -14,10 +14,15 @@ class ReaderService:
         db_reader = await self.repo.create_with_librarian(**new_reader.model_dump(), librarian_id=librarian_id)
         return ShortReaderResponse.model_validate(db_reader)
     
+    async def get_readers(self, offset: int, limit: int) -> list[ResponseReader]:
+        readers_db = await self.repo.get_readers(offset, limit)
+        return [ResponseReader.model_validate(r) for r in readers_db]
+    
     async def get_with_borro(self, reader_id: int) -> ReaderWithRecordsResponse:
-        reader = await self.repo.get_active_borrow()
+        reader_db = await self.repo.get_active_borrow()
+        return ReaderWithRecordsResponse.model_validate(reader_db)
 
     async def get_with_borrow_books(self, reader_id: int) -> ResponseReaderWithBooks:
-        reader = await self.repo.get_with_borrowed_books(reader_id=reader_id)
-        return ResponseReaderWithBooks.model_validate(reader)
+        reader_db = await self.repo.get_with_borrowed_books(reader_id=reader_id)
+        return ResponseReaderWithBooks.model_validate(reader_db)
     

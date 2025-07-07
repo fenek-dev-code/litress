@@ -16,7 +16,12 @@ async def lifespan(app: FastAPI):
         await conn.run_sync(Base.metadata.drop_all)
         print("Data Table is drop")
 
-app = FastAPI(lifespan=lifespan)
+app = FastAPI(
+    lifespan=lifespan,
+    debug=True,
+    title="BookService",
+    description="Book borrow records service!"
+)
 app.include_router(main_router)
 
 if __name__ == "__main__":

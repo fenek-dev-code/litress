@@ -1,15 +1,18 @@
 from fastapi import APIRouter, status, HTTPException, Depends
 from fastapi.security import OAuth2PasswordRequestForm
 
-from api.deps import book_service, librarian_service, reader_service, currnet_user
+from api.deps import librarian_service, currnet_user
 from core.schemas.token import Token, TokenData
-from core.schemas.librarian import LibrarianWithReadersResponse, LogInLibrarian,  LibrarianResponse, RegisterLibrarian
-from core.schemas.reader import CreateReader, ResponseReader, UpdateReader, ShortReaderResponse, ReaderWithRecordsResponse, ResponseReaderWithBooks
-from repository.exception import ConflictException, BaseException, NotFoundException, UnauthorizedException, LimmitException, ClientException
+from core.schemas.librarian import (
+    LibrarianWithReadersResponse, LogInLibrarian,  
+    LibrarianResponse, RegisterLibrarian, UpdateLibrarian
+)
+from repository.exception import (
+    BaseException, ClientException,
+    ConflictException, NotFoundException
+)
 
 from core.service.librarian import LibrarianService
-from core.service.reader import ReaderService
-
 from utils.auth_jwt import encode_jwt
 
 router = APIRouter(
@@ -79,59 +82,21 @@ async def login_user(
             detail="Не верный логин или пароль"
         )
     
-@router.post(
-    "/reader",
-    status_code=status.HTTP_201_CREATED
+@router.patch(
+    "/librarian",
+    status_code=status.HTTP_202_ACCEPTED
 )
-async def create_reader(
-    reader: CreateReader,
-    service: ReaderService = Depends(reader_service),
-    token_data: TokenData = Depends(currnet_user)
-) -> ShortReaderResponse:
+async def update_librarian(
+    data: UpdateLibrarian,
+    token: TokenData = Depends(currnet_user),
+    service: LibrarianService = Depends(librarian_service)
+):
     try:
-        result = await service.create_reader(reader, token_data.sub)
-        return result
-    except ConflictException as err:
+        return await service.update_librarian(token.sub, data)
+    except (NotFoundException, BaseException) as err:
         raise HTTPException(
             status_code=err.status_code,
-            detail="Читатель с таким Email уже есть"
-        )
-    except BaseException as err:
-        raise HTTPException(
-            status_code=err.status_code,
-            detail="Ошибка сервера повторите запрос"
+            detail="Не удалось обновить информацию"
         )
 
-@router.get(
-    "/reader/{reader_id}",
-    status_code=status.HTTP_200_OK
-)
-async def get_reader(
-    reader_id: int,
-    service: ReaderService = Depends(reader_service),
-    token_data: TokenData = Depends(currnet_user)
-) -> ReaderWithRecordsResponse:
-    try:
-        result = await service.get_with_borrow_books(reader_id=reader_id)
-        return result
-    except NotFoundException as err:
-        raise HTTPException(
-            status_code=err.status_code
-        )
-    
-@router.get(
-    "/reader/{reader_id}/books",
-    status_code=status.HTTP_200_OK
-)
-async def get_reader_with_books(
-    reader_id: int,
-    token: TokenData = Depends(currnet_user),
-    service: ReaderService = Depends(reader_service)
-) -> ResponseReaderWithBooks:
-    try:
-        return await service.get_with_borrow_books(reader_id=reader_id)
-    except NotFoundException as err:
-        raise HTTPException(
-            status_code=err.status_code,
-            detail="Not found reader"
-        )
+

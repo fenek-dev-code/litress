@@ -24,7 +24,24 @@ class LibrarianRepository(BaseRepository[Librarian]):
         await self.session.refresh(librarian)
         self.logger.info(f"Created librarian {librarian.id}")
         return librarian
-        
+    
+    async def update_librarian(self, id: int, data: dict):
+        try:
+            existing = await self.get(id)
+            if not existing:
+                raise exception.NotFoundException
+            for key, value in data:
+                if hasattr(existing, key):
+                    setattr(existing, key, value)
+            
+            await self.session.refresh(existing)
+            await self.session.commit()
+            self.logger.info(f"Update Librarian: {id}")
+            return existing
+        except SQLAlchemyError as e:
+            self.logger.error(f"Error during update, Librarian: {id} \nError[{e}]")
+            raise exception.BaseException
+
     async def get_with_readers(self, librarian_id: int):
         try:
             result = (await self.session.execute(

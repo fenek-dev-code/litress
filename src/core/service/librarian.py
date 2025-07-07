@@ -1,6 +1,6 @@
 from repository.database.librarian import LibrarianRepository
 from core.models.librarian import Librarian
-from core.schemas.librarian import RegisterLibrarian, LibrarianResponse, LibrarianWithReadersResponse
+from core.schemas.librarian import RegisterLibrarian, LibrarianResponse, LibrarianWithReadersResponse, UpdateLibrarian
 from utils.auth_jwt import hash_password, verefy_passowrd
 from repository.exception import ClientException
 
@@ -19,6 +19,13 @@ class LibrarianService:
         db_librarian = await self.repo.create_librarian(**librarian.model_dump())
         return LibrarianResponse.model_validate(db_librarian)
     
+    async def update_librarian(self, id: int, data: UpdateLibrarian) -> LibrarianResponse:
+        db_librarian =  await self.repo.update_librarian(
+            id=id, data=data.model_dump()
+        )
+        return LibrarianResponse.model_validate(db_librarian)
+        
+
     async def authenticate(
         self, 
         email: str, 

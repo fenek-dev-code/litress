@@ -67,16 +67,19 @@ class BookRepository(BaseRepository[Book]):
         author: str | None = None, 
         title: str | None = None
     ):
-        query = select(Book)
-        
-        if author:
-            query = query.where(Book.author.like(f"%{author}%"))
-        if title:
-            query = query.where(Book.title.like(f"%{title}%"))
-        
-        result = await self.session.execute(query)
-        return result.scalars().all()
-
+        try:
+            query = select(Book)
+            
+            if author:
+                query = query.where(Book.author.like(f"%{author}%"))
+            if title:
+                query = query.where(Book.title.like(f"%{title}%"))
+            
+            result = await self.session.execute(query)
+            return result.scalars().all()
+        except SQLAlchemyError as err:
+            self.logger.error(f"Search book error: [{err}]")
+            raise exception.BaseException
     async def borrow_book(
         self, 
         book_id: int, 

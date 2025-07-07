@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from core.service.book import BookService
-from core.schemas.book import ShortBookResponse, ResponseBook, CreateBook
+from core.schemas.book import BookSearchFilters, ShortBookResponse, ResponseBook, CreateBook, UpdateBook, ResponseBookWithBorrow
 from repository.exception import NotFoundException, BaseException, UnauthorizedException
 from api.deps import book_service, currnet_user
 from core.schemas.token import TokenData
@@ -9,7 +9,6 @@ router = APIRouter(
     prefix="/book",
     tags=['Books']
 )
-
 
 @router.post(
     "",
@@ -45,6 +44,44 @@ async def get_books(
             detail="Server Error"
         )
     
+@router.delete(
+    "/{book_id}",
+    status_code=status.HTTP_200_OK
+)
+async def delete_book(
+    book_id: int,
+    token: TokenData = Depends(currnet_user),
+    service: BookService = Depends(book_service)
+):
+    try:
+        return await service.delete_book(book_id=book_id)
+    except NotFoundException as err:
+        raise HTTPException(
+            status_code=err.status_code,
+            detail=err
+        )
+
+@router.patch(
+    "/{book_id}",
+    status_code=status.HTTP_200_OK
+)
+async def update_book(
+    book_id: int,
+    book_data: UpdateBook,
+    token: TokenData = Depends(currnet_user),
+    service: BookService = Depends(book_service),
+) -> ResponseBook:
+    try:
+        return await service.update_book(book_id=book_id, book=book_data)
+    except NotFoundException:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Not Found Book"
+        )
+    except BaseException:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
 
 @router.get(
     "/{book_id}",
@@ -65,4 +102,42 @@ async def get_book_by_id(
         raise HTTPException(
             status_code=err.status_code,
             detail="Server Error"
+        )
+
+@router.get(
+    "/{book_id}/borrow",
+    status_code=status.HTTP_200_OK
+)
+async def book_with_borrow(
+    book_id: int,
+    token: TokenData = Depends(currnet_user),
+    service: BookService = Depends(book_service)
+) -> ResponseBookWithBorrow:
+    try:
+        return await service.get_book_with_borrow(book_id=book_id)
+    except NotFoundException as err:
+        raise HTTPException(
+            status_code=err.status_code,
+            detail="Not found book"
+        )
+    except BaseException as err:
+        raise HTTPException(
+            status_code=err.status_code,
+            detail="Server Error"
+        )
+
+@router.get(
+    "/search",
+    status_code=status.HTTP_200_OK
+)
+async def search_book(
+    search_params: BookSearchFilters,
+    service: BookService = Depends(book_service)
+) -> list[ShortBookResponse]:
+    try:
+        return await service.search_book(search_params) 
+    except BaseException:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Not found"
         )

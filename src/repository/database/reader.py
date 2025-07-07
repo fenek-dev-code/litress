@@ -9,6 +9,17 @@ from sqlalchemy.orm import selectinload, joinedload
 
 class ReaderRepository(BaseRepository[Reader]):
 
+    async def get_readers(self, offset: int, limit: int):
+        try:
+            readers = await self.session.scalars(
+                select(Reader).offset(offset=offset).limit(limit=limit)
+            )
+            return readers
+        except SQLAlchemyError as e:
+            self.logger.error(f"Get Readers Error[{e}]")
+            pass
+
+
     async def create_with_librarian(self, email: str, name: str, librarian_id: int):
         try:
             existing = (await self.session.execute(
