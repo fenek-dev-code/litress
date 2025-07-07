@@ -85,36 +85,36 @@ class BookRepository(BaseRepository[Book]):
     ) -> BorrowRecord:
         self.logger.info(f"Попытка выдачи книги {book_id} читателю {reader_id}")
         try:
-            async with self.session.begin():
-                book = await self.session.get(Book, book_id)
-                if not book:
-                    raise exception.NotFoundException("Книга не найдена")
-                if book.copies < 1:
-                    raise exception.NotFoundException("Нет доступных экземпляров этой книги")
-                
-                active_borrows = await self.session.scalar(
-                    select(func.count(BorrowRecord.id)).where(
-                        BorrowRecord.reader_id == reader_id, 
-                        BorrowRecord.return_date.is_(None)
-                    )
+            
+            book = await self.session.get(Book, book_id)
+            if not book:
+                raise exception.NotFoundException("Книга не найдена")
+            if book.copies < 1:
+                raise exception.NotFoundException("Нет доступных экземпляров этой книги")
+            
+            active_borrows = await self.session.scalar(
+                select(func.count(BorrowRecord.id)).where(
+                    BorrowRecord.reader_id == reader_id, 
+                    BorrowRecord.return_date.is_(None)
                 )
+            )
 
-                if active_borrows >= 3:
-                    raise exception.LimmitException
-                
-                record = BorrowRecord(
-                    book_id=book_id,
-                    reader_id=reader_id,
-                    librarian_id=librarian_id,
-                    borrow_date=datetime.now()
-                )
-                
-                book.copies -= 1
-                record.book = book
-                self.session.add(record)
-                await self.session.flush()
-                self.logger.info()
-                return record
+            if active_borrows >= 3:
+                raise exception.LimmitException
+            
+            record = BorrowRecord(
+                book_id=book_id,
+                reader_id=reader_id,
+                librarian_id=librarian_id,
+                borrow_date=datetime.now()
+            )
+            
+            book.copies -= 1
+            record.book = book
+            self.session.add(record)
+            await self.session.flush()
+            self.logger.info()
+            return record
         except (exception.NotFoundException, exception.LimmitException):
             raise
 

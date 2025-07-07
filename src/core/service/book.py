@@ -2,7 +2,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from repository.database.book import BookRepository
 from core.models.book import Book
-from core.schemas.book import CreateBook, ResponseBook, UpdateBook
+from core.schemas.book import CreateBook, ResponseBook, UpdateBook, ResponseBookWithBorrow, ShortBookResponse
 
 
 
@@ -15,9 +15,9 @@ class BookService:
         book = Book(**book_data, librarian_id=librarian_id)
         return await self.repo.create_book(book)
     
-    async def get_book(self, id: int) -> ResponseBook:
+    async def get_book(self, id: int) -> ShortBookResponse:
         db_book = await self.repo.get(id)
-        return ResponseBook.model_validate(db_book)
+        return ShortBookResponse.model_validate(db_book)
 
     async def update_book(self, book_id: int, book: UpdateBook) -> ResponseBook:
         book_data = book.model_dump() 
@@ -30,15 +30,15 @@ class BookService:
     async def get_book_with_borrow(self, book_id: int) -> ResponseBook:
         return await self.repo.get_book_with_borrow(book_id)
     
-    async def get_books(self, offset: int, limit: int) -> list[ResponseBook]:
+    async def get_books(self, offset: int, limit: int) -> list[ShortBookResponse]:
         db_books = await self.repo.get_books(offset=offset, limit=limit)
-        return [ResponseBook.model_validate(b) for b in db_books]
+        return [ShortBookResponse.model_validate(b) for b in db_books]
     
     async def search_book(
             self, 
             autor: str | None = None, 
             title: str | None = None
-    ) -> list[ResponseBook]:
+    ) -> list[ResponseBookWithBorrow]:
         db_books = await self.repo.surch_book(author=autor, title=title)
-        return [ResponseBook.model_validate(b) for b in db_books]
+        return [ResponseBookWithBorrow.model_validate(b) for b in db_books]
     

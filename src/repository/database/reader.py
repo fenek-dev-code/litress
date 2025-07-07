@@ -17,15 +17,14 @@ class ReaderRepository(BaseRepository[Reader]):
 
             if existing:
                 raise exception.ConflictException
-
-            async with self.session.begin():
-                reader = Reader(email=email, name=name, librarian_id=librarian_id)
-                await self.session.add(reader)
-                await self.session.flush()
-                return reader
+            reader = Reader(email=email, name=name, librarian_id=librarian_id)
+            self.session.add(reader)
+            await self.session.commit()
+            await self.session.refresh(reader)
+            return reader
             
         except SQLAlchemyError as err:
-            self.logger.error(f"Ошибки при создание читателя {reader.email} : {err}")
+            self.logger.error(f"Ошибки при создание читателя {email} : {err}")
             raise exception.BaseException
 
     async def get_with_borrowed_books(self, reader_id: int):

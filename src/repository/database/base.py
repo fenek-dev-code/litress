@@ -20,8 +20,6 @@ class BaseRepository(Generic[ModelType]):
         result = (await self.session.execute(
             select(self.model).where(self.model.email == email)
         )).scalar_one_or_none()
-        if not result:
-            raise NotFoundException
         return result 
     
     async def delete(self, id: int):

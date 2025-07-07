@@ -4,6 +4,8 @@ from sqlalchemy import Integer, String, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 from .base import Base
+from .book import Book
+from .librarian import Librarian
 
 class Reader(Base):
     """
@@ -52,7 +54,9 @@ class Reader(Base):
     Обеспечивает доступ к данным связанного библиотекаря.
     """
 
-    books: Mapped[List["Book"]] = relationship(back_populates="reader")  # type: ignore
+    borrow_records: Mapped[List["BorrowRecord"]] = relationship(
+        back_populates="reader"
+    )
     """
     Отношение "один-ко-многим" с моделью Book.
     Список книг, связанных с данным читателем.

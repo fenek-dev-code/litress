@@ -1,4 +1,4 @@
-from fastapi import Depends
+from fastapi import Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.security import OAuth2PasswordBearer
 
@@ -29,8 +29,17 @@ def reader_service(
 OAuth_Bearer = OAuth2PasswordBearer(
     tokenUrl="auth/token"
 )
-def currnet_user(
-    token: str = Depends(OAuth_Bearer)
+async def currnet_user(
+    token_str: str = Depends(OAuth_Bearer)
 ) -> TokenData:
-    payload = decode_jwt(token=token)
-    return TokenData(**payload)
+    try:
+        payload = decode_jwt(token=token_str)
+        token = TokenData(**payload)
+        return token
+    
+    except ValueError as e:
+        print(e)
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid token"
+        )

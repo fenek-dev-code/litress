@@ -1,6 +1,6 @@
 from sqlalchemy import Integer, String, CheckConstraint, func, ForeignKey, Index
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 from .base import Base
 
@@ -17,6 +17,10 @@ class Book(Base):
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
     
     librarian_id: Mapped[int] = mapped_column(Integer, ForeignKey("librarians.id"))
+
+    borrow_records: Mapped[List["BorrowRecord"]] = relationship( 
+        back_populates="book"
+    )
     __table_args__ = (
         Index('ix_book_author', 'author'),  
         Index('ix_book_title', 'title')   

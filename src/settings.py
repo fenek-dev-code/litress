@@ -8,7 +8,7 @@ class JWTConfig(BaseModel):
     public_key: Path = BASE_DIR / "secret" / "jwt-public.pem" 
     secret_key: Path = BASE_DIR / "secret" / "jwt-privet.pem"
     alghorithm: str = "RS256"
-    access_token_expire_minute: int = 1
+    access_token_expire_minute: int = 30
 
 class DataBaseConfig(BaseModel):
     url: str = "sqlite+aiosqlite:///database.db"
