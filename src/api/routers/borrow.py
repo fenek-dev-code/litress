@@ -97,4 +97,22 @@ async def get_borrow_records(
     token: TokenData = Depends(currnet_user),
     service: BorrowService = Depends(borrow_service),
 ):
-    pass
+    try:
+        return await service.get_borrow_records(filter)
+    except:
+        pass
+
+@router.get(
+    "/all",
+    status_code=status.HTTP_200_OK
+)
+async def get_all_borrow(
+    offset: int = 0,
+    limit: int = 25,
+    token: TokenData = Depends(currnet_user),
+    service: BorrowService = Depends(borrow_service)
+):
+    try:
+        return await service.get_all_borrow(offset=offset, limit=limit)
+    except:
+        pass

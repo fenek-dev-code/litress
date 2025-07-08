@@ -126,6 +126,12 @@ class BorrowRepository(BaseRepository[BorrowRecord]):
         
     async def get_all_borrow_records(self, offset: int, limit: int):
         try:
-            pass
+            result = await self.session.scalars((
+                select(BorrowRecord))
+                .offset(offset)
+                .limit(limit)
+            )
+            return result.all()
         except SQLAlchemyError as err:
-            pass
+            self.logger.error(f"Error where get all borrow Error: {err}")
+            raise exception.BaseException

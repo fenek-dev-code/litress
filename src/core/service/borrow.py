@@ -33,6 +33,10 @@ class BorrowService:
         borrow = await self.repo.get_borrow_with_book(borrow_id=borrow_id)
         return BorrowWithBook.model_validate(borrow)
     
-    async def get_borrow_records(self, filter: BorrowFilter):
-        
-        pass 
+    async def get_borrow_records(self, filter: BorrowFilter) -> list[BorrowBookResponse]:
+        result = await self.repo.get_borrow_records(filter=filter.active)
+        return [BorrowBookResponse.model_validate(borrow) for borrow in result]
+    
+    async def get_all_borrow(self, offset: int, limit: int):
+        result = await self.repo.get_all_borrow_records(offset=offset, limit=limit)
+        return [BorrowBookResponse.model_validate(borrow) for borrow in result]
