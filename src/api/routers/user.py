@@ -16,13 +16,14 @@ from core.service.librarian import LibrarianService
 from utils.auth_jwt import encode_jwt
 
 router = APIRouter(
-    prefix='/auth',
-    tags=['Auth']
+    prefix='/librarian',
+    tags=['Librarian']
 )
 
 @router.post(
     "/regiser",
-    status_code=status.HTTP_201_CREATED
+    status_code=status.HTTP_201_CREATED,
+    summary="Create User"
 )
 async def create_librarian(
     user: RegisterLibrarian,
@@ -39,7 +40,7 @@ async def create_librarian(
         )
 
 @router.get(
-    "/librarian",
+    "",
     status_code=status.HTTP_200_OK
 )
 async def get_librarian(
@@ -83,7 +84,7 @@ async def login_user(
         )
     
 @router.patch(
-    "/librarian",
+    "",
     status_code=status.HTTP_202_ACCEPTED
 )
 async def update_librarian(

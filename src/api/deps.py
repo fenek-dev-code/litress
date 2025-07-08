@@ -6,6 +6,7 @@ from repository.session import get_session
 from core.service.librarian import LibrarianService
 from core.service.book import BookService
 from core.service.reader import ReaderService
+from core.service.borrow import BorrowService
 from core.schemas.token import TokenData
 from utils.auth_jwt import decode_jwt
 
@@ -25,9 +26,13 @@ def reader_service(
 ):
     return ReaderService(session=session)
 
+def borrow_service(
+    session: AsyncSession = Depends(get_session)
+):
+    return BorrowService(session=session)
 
 OAuth_Bearer = OAuth2PasswordBearer(
-    tokenUrl="auth/token"
+    tokenUrl="librarian/token"
 )
 async def currnet_user(
     token_str: str = Depends(OAuth_Bearer)

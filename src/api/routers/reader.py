@@ -13,14 +13,13 @@ from repository.exception import (
 )
 
 
-
 router = APIRouter(
+    prefix="/reader",
     tags=['Readers']
 )
 
-""" ____Readers____ """
 @router.post(
-    "/reader",
+    "",
     status_code=status.HTTP_201_CREATED
 )
 async def create_reader(
@@ -43,7 +42,7 @@ async def create_reader(
         )
 
 @router.get(
-    "/reader",
+    "",
     status_code=status.HTTP_200_OK
 )
 async def get_readers(
@@ -61,7 +60,7 @@ async def get_readers(
 
 
 @router.get(
-    "/reader/{reader_id}",
+    "/{reader_id}",
     status_code=status.HTTP_200_OK
 )
 async def get_reader(
@@ -78,7 +77,7 @@ async def get_reader(
         )
     
 @router.get(
-    "/reader/{reader_id}/books",
+    "/{reader_id}/books",
     status_code=status.HTTP_200_OK
 )
 async def get_reader_with_books(

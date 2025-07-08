@@ -1,11 +1,11 @@
-from core.schemas.borrow import  BorrowBookResponse, BorrowBooksBase
-from core.models.book import Book
-from repository.database import book
+from core.schemas.borrow import  BorrowBookResponse, BorrowBooksBase, BorrowWithBook
+from core.models.order import BorrowRecord
+from repository.database import borrow
 
 
 class BorrowService:
     def __init__(self, session):
-        self.repo = book.BookRepository(model=Book, session=session)
+        self.repo = borrow.BorrowRepository(model=BorrowRecord, session=session)
 
     async def borrow_book(
         self, 
@@ -28,3 +28,7 @@ class BorrowService:
             book_id=borrow.book_id
         )
         return BorrowBookResponse.model_validate(borrow)
+    
+    async def get_borrow_by_id(self, borrow_id: int) -> BorrowWithBook:
+        borrow = await self.repo.get_borrow_with_book(borrow_id=borrow_id)
+        return BorrowWithBook.model_validate(borrow)
