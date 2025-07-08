@@ -19,9 +19,11 @@ class BorrowBookCreate(BorrowBooksBase):
     librarian_id: int = Field(..., example=1, description="ID библиотекаря")  # Исправлено: examples -> example
 
 
-class BorrowBookReturn(BaseModel):
-    record_id: int = Field(..., example=1, description="ID записи о выдаче", validation_alias="id")
+class BorrowBookReturn(BorrowBooksBase):
+    """ Return Book Shema"""
 
+class BorrowFilter(BaseModel):
+    active: bool | None = None
 
 class BorrowBookResponse(BorrowBooksBase):
     record_id: int = Field(..., description="ID записи о выдаче", validation_alias="id")  # Добавлено отсутствующее поле

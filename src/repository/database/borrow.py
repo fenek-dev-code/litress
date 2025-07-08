@@ -73,7 +73,7 @@ class BorrowRepository(BaseRepository[BorrowRecord]):
                         BorrowRecord.return_date.is_(None)  
                 ))).scalar_one_or_none()
                 if not order:
-                    raise 
+                    raise exception.NotFoundException
                 order.return_date = datetime.now()
                 book.copies += 1
                 
@@ -104,3 +104,28 @@ class BorrowRepository(BaseRepository[BorrowRecord]):
         except SQLAlchemyError as e:
             self.logger.error(f"Database error fetching borrow record {borrow_id}: {str(e)}")
             raise exception.BaseException(f"Error accessing borrow record {borrow_id}") from e
+        
+    async def get_borrow_records(self, filter: bool = True):
+        try:
+            if filter == True:
+                result = (await self.session.execute(
+                    select(BorrowRecord).where(
+                        BorrowRecord.return_date.is_not(None) 
+                    )
+                ))
+                return result.scalars().all()
+            result = (await self.session.execute(
+                select(BorrowRecord).where(
+                    BorrowRecord.return_date.is_(None)
+                )
+            ))
+            return result.scalars().all()
+        except SQLAlchemyError as err:
+            self.logger.error(f"Get Borrow records Error [{err}]")
+            raise exception.BaseException
+        
+    async def get_all_borrow_records(self, offset: int, limit: int):
+        try:
+            pass
+        except SQLAlchemyError as err:
+            pass

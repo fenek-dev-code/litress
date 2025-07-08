@@ -7,7 +7,8 @@ from repository.exception import (
 )
 from core.schemas.borrow import (
     BorrowBookCreate, BorrowBookResponse, BorrowBookReturn,
-    BorrowBooksBase, ShortBorrowResponse, BorrowWithBook
+    BorrowBooksBase, ShortBorrowResponse, BorrowWithBook,
+    BorrowFilter
 )
 from api.deps import borrow_service, currnet_user
 
@@ -19,10 +20,10 @@ router = APIRouter(
 
 
 @router.post(
-    "",
+    "/record",
     status_code=status.HTTP_200_OK
 )
-async def create_borrow(
+async def borrow_book(
     borrow: BorrowBooksBase,
     service: BorrowService = Depends(borrow_service),
     token: TokenData = Depends(currnet_user)
@@ -41,6 +42,28 @@ async def create_borrow(
     except LimmitException:
         raise HTTPException(
             status_code=500
+        )
+
+@router.post(
+    "/return",
+    status_code=status.HTTP_200_OK
+)
+async def return_book(
+    borrow_data: BorrowBookReturn,
+    token: TokenData = Depends(currnet_user),
+    service: BorrowService = Depends(borrow_service)
+) -> BorrowWithBook:
+    try:
+        return await service.return_book(borrow=borrow_data)
+    except BaseException:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="server Error"
+        ) 
+    except NotFoundException:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Not found borrow"
         )
 
 @router.get(
@@ -64,3 +87,14 @@ async def get_borrow(
             status_code=err.status_code,
             detail="Server error"
         )
+    
+@router.get(
+    "",
+    status_code=status.HTTP_200_OK
+)
+async def get_borrow_records(
+    filter: BorrowFilter,
+    token: TokenData = Depends(currnet_user),
+    service: BorrowService = Depends(borrow_service),
+):
+    pass
