@@ -1,9 +1,8 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, delete
-from typing import Generic, TypeVar, Optional
+from typing import Generic, TypeVar
 import logging
 
-from repository.exception import NotFoundException
 
 ModelType = TypeVar("ModelType")
 
@@ -28,5 +27,5 @@ class BaseRepository(Generic[ModelType]):
                 delete(self.model).where(self.model.id == id)
             )
             if result.rowcount == 0:
-                raise NotFoundException(f"{self.model.__name__} {id} not found")
+                raise False
             return True

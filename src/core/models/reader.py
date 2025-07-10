@@ -1,11 +1,14 @@
-from typing import List  
+from typing import List, TYPE_CHECKING
 from datetime import datetime
 from sqlalchemy import Integer, String, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 from .base import Base
-from .book import Book
-from .librarian import Librarian
+
+if TYPE_CHECKING:
+    from .book import Book
+    from .order import BorrowRecord
+    from .librarian import Librarian
 
 class Reader(Base):
     """
@@ -48,7 +51,7 @@ class Reader(Base):
     Указывает, какой библиотекарь зарегистрировал читателя.
     """
 
-    librarian: Mapped["Librarian"] = relationship(back_populates="readers") # type: ignore
+    librarian: Mapped["Librarian"] = relationship(back_populates="readers")
     """
     Отношение "многие-к-одному" с моделью Librarian.
     Обеспечивает доступ к данным связанного библиотекаря.

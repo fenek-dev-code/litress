@@ -5,14 +5,16 @@ from utils.auth_jwt import hash_password, verefy_passowrd
 
 from .base import BaseRepository
 from core.models.librarian import Librarian
-from repository import exception
+from core.exceptions import (
+    NotFoundError, ConflictBookError, ServerError
+)
 
 class LibrarianRepository(BaseRepository[Librarian]):
 
     async def create_librarian(self, name: str,  email: str, password: str):
         existing = await self.get_by_email(email)
         if existing:
-            raise exception.ConflictException
+            raise ConflictBookError(message=f"Читатель с тиким Email уже есть")
         librarian = Librarian(
             name=name,
             email=email,
@@ -29,7 +31,7 @@ class LibrarianRepository(BaseRepository[Librarian]):
         try:
             existing = await self.get(id)
             if not existing:
-                raise exception.NotFoundException
+                raise NotFoundError(message=f"Библиотекарь {id} не найден")
             for key, value in data:
                 if hasattr(existing, key):
                     setattr(existing, key, value)
@@ -40,7 +42,7 @@ class LibrarianRepository(BaseRepository[Librarian]):
             return existing
         except SQLAlchemyError as e:
             self.logger.error(f"Error during update, Librarian: {id} \nError[{e}]")
-            raise exception.BaseException
+            raise ServerError
 
     async def get_with_readers(self, librarian_id: int):
         try:
@@ -50,8 +52,8 @@ class LibrarianRepository(BaseRepository[Librarian]):
                 .options(selectinload(Librarian.readers))
             )).scalar_one_or_none()
             if not result:
-                raise exception.NotFoundException
+                raise NotFoundError(message=f"Библиотекарь {id} не найден")
             return result
         
         except SQLAlchemyError:
-            raise exception.BaseException
+            raise ServerError

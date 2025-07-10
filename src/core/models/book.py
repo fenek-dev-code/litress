@@ -1,9 +1,11 @@
 from sqlalchemy import Integer, String, CheckConstraint, func, ForeignKey, Index
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from typing import Optional, List
+from typing import Optional, List, TYPE_CHECKING
 from datetime import datetime
 from .base import Base
 
+if TYPE_CHECKING:
+    from .order import BorrowRecord
 
 class Book(Base):
     __tablename__ = "books"

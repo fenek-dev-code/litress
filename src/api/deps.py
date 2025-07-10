@@ -2,6 +2,7 @@ from fastapi import Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.security import OAuth2PasswordBearer
 
+from core.exceptions import UnauthorizedError
 from repository.session import get_session
 from core.service.librarian import LibrarianService
 from core.service.book import BookService
@@ -42,9 +43,6 @@ async def currnet_user(
         token = TokenData(**payload)
         return token
     
-    except ValueError as e:
-        print(e)
-        raise HTTPException(
-            status_code=400,
-            detail="Invalid token"
-        )
+    except ValueError:
+        raise UnauthorizedError
+    

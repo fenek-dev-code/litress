@@ -6,6 +6,7 @@ from repository.session import engine
 from core.models.base import Base
 import uvicorn
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     async with engine.begin() as conn:

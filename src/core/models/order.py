@@ -1,11 +1,13 @@
 from datetime import datetime
 from sqlalchemy import ForeignKey, Column, Integer, DateTime
 from sqlalchemy.orm import relationship, Mapped, mapped_column
+from typing import TYPE_CHECKING
 from .base import Base  
-from .book import Book
-from .librarian import Librarian
-from .reader import Reader
 
+if TYPE_CHECKING:
+    from .book import Book
+    from .reader import Reader
+    from .librarian import Librarian
 
 class BorrowRecord(Base):
     """

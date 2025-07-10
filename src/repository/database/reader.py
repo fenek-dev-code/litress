@@ -1,7 +1,9 @@
 from core.models.reader import Reader
 from core.models.order import BorrowRecord
 from .base import BaseRepository
-from repository import exception
+from core.exceptions import (
+    ServerError, NotFoundError, ConflictBookError
+)
 
 from sqlalchemy import select, delete, func
 from sqlalchemy.exc import SQLAlchemyError
@@ -27,7 +29,7 @@ class ReaderRepository(BaseRepository[Reader]):
             )).scalar_one_or_none()
 
             if existing:
-                raise exception.ConflictException
+                raise ConflictBookError(message=f"Читатель с Email: {email} уже есть !")
             reader = Reader(email=email, name=name, librarian_id=librarian_id)
             self.session.add(reader)
             await self.session.commit()
@@ -36,7 +38,7 @@ class ReaderRepository(BaseRepository[Reader]):
             
         except SQLAlchemyError as err:
             self.logger.error(f"Ошибки при создание читателя {email} : {err}")
-            raise exception.BaseException
+            raise ServerError
 
     async def get_with_borrowed_books(self, reader_id: int):
         result = (await self.session.execute(
@@ -48,7 +50,7 @@ class ReaderRepository(BaseRepository[Reader]):
             )
         )).scalar_one_or_none()
         if not result:
-            raise exception.NotFoundException
+            raise NotFoundError(message=f"Читатель {reader_id} не найден")
         return result
 
     
@@ -66,7 +68,7 @@ class ReaderRepository(BaseRepository[Reader]):
     async def get_active_borrow(self, reader_id: int):
         reader = await self.session.get(Reader, reader_id)
         if not reader:
-            raise exception.NotFoundException("Reader not found")
+            raise NotFoundError(message=f"Читетль {reader_id} не найден")
           
         result = await self.session.execute(
             select(BorrowRecord)
@@ -79,6 +81,6 @@ class ReaderRepository(BaseRepository[Reader]):
         borrow_records = result.scalars().all()
 
         if not borrow_records:
-            raise exception.NotFoundException("No active borrows found")
+            raise NotFoundError(message=f"Активных заказов нет")
             
         return borrow_records

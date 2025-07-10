@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, ConfigDict
 from datetime import datetime
 from typing import List, Optional
 
@@ -18,8 +18,7 @@ class BaseReader(BaseModel):
         example="reader@example.com",
         description="Контактный email читателя"
     )
-    class Config:
-        from_attributes = True 
+    model_config = ConfigDict(from_attributes=True)
 
 class CreateReader(BaseReader):
     """"""
@@ -57,8 +56,7 @@ class UpdateReader(BaseModel):
 class ShortReaderResponse(BaseModel):
     reader_id: int = Field(..., example=42, description="Уникальный ID читателя", validation_alias="id")
     name: str = Field(..., example="Иван Иванов", description="Полное имя читателя")
-    class Config:
-        from_attributes = True 
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ResponseReaderWithBooks(ShortReaderResponse):

@@ -7,11 +7,6 @@ from core.schemas.reader import (
 )
 from api.deps import currnet_user, reader_service
 
-from repository.exception import (
-    BaseException, ClientException,
-    ConflictException, NotFoundException
-)
-
 
 router = APIRouter(
     prefix="/reader",
@@ -27,19 +22,8 @@ async def create_reader(
     service: ReaderService = Depends(reader_service),
     token_data: TokenData = Depends(currnet_user)
 ) -> ShortReaderResponse:
-    try:
-        result = await service.create_reader(reader, token_data.sub)
-        return result
-    except ConflictException as err:
-        raise HTTPException(
-            status_code=err.status_code,
-            detail="Читатель с таким Email уже есть"
-        )
-    except BaseException as err:
-        raise HTTPException(
-            status_code=err.status_code,
-            detail="Ошибка сервера повторите запрос"
-        )
+    return await service.create_reader(reader, token_data.sub)
+
 
 @router.get(
     "",
@@ -50,13 +34,7 @@ async def get_readers(
     service: ReaderService = Depends(reader_service),
     token: TokenData = Depends(currnet_user)
 ):
-    try:
-        return await service.get_readers(offset, limit)
-    except BaseException as err:
-        raise HTTPException(
-            status_code=err.status_code,
-            detail="Server Errror Please"
-        )
+    return await service.get_readers(offset, limit)
 
 
 @router.get(
@@ -68,14 +46,8 @@ async def get_reader(
     service: ReaderService = Depends(reader_service),
     token_data: TokenData = Depends(currnet_user)
 ) -> ReaderWithRecordsResponse:
-    try:
-        result = await service.get_with_borrow_books(reader_id=reader_id)
-        return result
-    except NotFoundException as err:
-        raise HTTPException(
-            status_code=err.status_code
-        )
-    
+    return await service.get_with_borro(reader_id=reader_id)
+
 @router.get(
     "/{reader_id}/books",
     status_code=status.HTTP_200_OK
@@ -85,11 +57,4 @@ async def get_reader_with_books(
     token: TokenData = Depends(currnet_user),
     service: ReaderService = Depends(reader_service)
 ) -> ResponseReaderWithBooks:
-    try:
-        return await service.get_with_borrow_books(reader_id=reader_id)
-    except NotFoundException as err:
-        raise HTTPException(
-            status_code=err.status_code,
-            detail="Not found reader"
-        )
-    
+    return await service.get_with_borrow_books(reader_id=reader_id)

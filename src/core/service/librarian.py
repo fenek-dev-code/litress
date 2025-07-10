@@ -2,7 +2,6 @@ from repository.database.librarian import LibrarianRepository
 from core.models.librarian import Librarian
 from core.schemas.librarian import RegisterLibrarian, LibrarianResponse, LibrarianWithReadersResponse, UpdateLibrarian
 from utils.auth_jwt import hash_password, verefy_passowrd
-from repository.exception import ClientException
 
 class LibrarianService:
     def __init__(self, session):
