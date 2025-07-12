@@ -86,6 +86,8 @@ async def test_borrow_already_borrowed_book(async_client, auth_token, created_re
 async def test_return_borrow(async_client, auth_token, created_borrow):
     """Тест: возврат кинги"""
     headers = {"Authorization": f"Bearer {auth_token}"}
+    response_book_old = await async_client.get(f"/book/{created_borrow["book_id"]}", headers=headers)
+    assert response_book_old.status_code == 200
 
     response = await async_client.post(
         url="/borrow/return", 
@@ -100,6 +102,10 @@ async def test_return_borrow(async_client, auth_token, created_borrow):
     assert data["return_date"] is not None
     assert data["book_id"] == created_borrow["book_id"]
     assert data["reader_id"] == created_borrow["reader_id"]
+
+    response_book_update = await async_client.get(f"/book/{created_borrow["book_id"]}", headers=headers)
+    assert response_book_update.status_code == 200
+    assert response_book_old.json()['copies'] < response_book_update.json()['copies']
     
 @pytest.mark.asyncio
 async def test_return_borrow_unauthorize(async_client):

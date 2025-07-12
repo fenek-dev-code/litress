@@ -51,8 +51,8 @@ class ShortBookResponse(BaseModel):
     title: str = Field(..., example="1984", description="Название книги")
     author: str = Field(..., example="Джордж Оруэлл", description="Автор книги")
     pub_year: Optional[int] = Field(None, example=1949, description="Год публикации")
-    class Config:
-        from_attributes = True
+    copies: int = Field(ge=1, le=1000, default=1, example=5, description="Количество доступных копий")
+    model_config = ConfigDict(from_attributes = True)
 
 class UpdateBook(BaseModel):
     title: Optional[str] = Field(
