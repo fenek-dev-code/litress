@@ -12,8 +12,9 @@ class BookService:
 
     async def create_book(self, new_book: CreateBook, librarian_id: int) -> ResponseBook:
         book_data = new_book.model_dump()
-        book = Book(**book_data, librarian_id=librarian_id)
-        return await self.repo.create_book(book)
+        book_model = Book(**book_data, librarian_id=librarian_id)
+        book = await self.repo.create_book(book_model)
+        return ResponseBook.model_validate(book)
     
     async def get_book(self, id: int) -> ShortBookResponse:
         db_book = await self.repo.get(id)

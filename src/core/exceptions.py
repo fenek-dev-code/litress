@@ -42,3 +42,10 @@ class ConflictBookError(NotFoundError):
         message: str, 
         code = status.HTTP_400_BAD_REQUEST):
         super().__init__(message, code)
+
+class UserLogInError(NotFoundError):
+    def __init__(
+        self, 
+        message: str = "Не верный логин или пароль", 
+        code = status.HTTP_400_BAD_REQUEST):
+        super().__init__(message, code)

@@ -1,6 +1,9 @@
 from fastapi import APIRouter, Depends, status
 from core.service.book import BookService
-from core.schemas.book import BookSearchFilters, ShortBookResponse, ResponseBook, CreateBook, UpdateBook, ResponseBookWithBorrow
+from core.schemas.book import (
+    BookSearchFilters, ShortBookResponse, ResponseBook, 
+    CreateBook, UpdateBook, ResponseBookWithBorrow
+)
 from api.deps import book_service, currnet_user
 from core.schemas.token import TokenData
 from typing import Annotated

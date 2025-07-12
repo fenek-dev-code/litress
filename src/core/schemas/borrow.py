@@ -1,17 +1,17 @@
 from datetime import datetime
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from typing import Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from .book import ResponseBook
+    from .book import ShortBookResponse
     from .reader import ResponseReader
 
 
 class BorrowBookCreate(BaseModel):
     book_id: int = Field(..., example=1, description="ID книги")
     reader_id: int = Field(..., example=1, description="ID читателя")
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes = True)
+        
 
 class BorrowBookReturn(BorrowBookCreate):
     """ Return Book Shema"""
@@ -26,7 +26,7 @@ class BorrowBookResponse(BorrowBookCreate):
     return_date: Optional[datetime] = Field(None, example="2023-02-01T00:00:00")
 
 class BorrowWithBookAndReader(BorrowBookResponse):
-    book: Optional["ResponseBook"] = None
+    book: Optional["ShortBookResponse"] = None
     reader: Optional["ResponseReader"] = None
 
 class ShortBorrowResponse(BorrowBookCreate):

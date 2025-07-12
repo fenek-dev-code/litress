@@ -30,7 +30,8 @@ async def create_reader(
     status_code=status.HTTP_200_OK
 )
 async def get_readers(
-    offset: int, limit: int,
+    offset: int = 0, 
+    limit: int = 25,
     service: ReaderService = Depends(reader_service),
     token: TokenData = Depends(currnet_user)
 ):

@@ -29,14 +29,21 @@ class LibrarianRepository(BaseRepository[Librarian]):
     
     async def update_librarian(self, id: int, data: dict):
         try:
-            existing = await self.get(id)
+            existing = await self.session.get(Librarian, id)
             if not existing:
                 raise NotFoundError(message=f"Библиотекарь {id} не найден")
-            for key, value in data:
-                if hasattr(existing, key):
-                    setattr(existing, key, value)
             
-            await self.session.refresh(existing)
+            allowed_fields = {'name', 'email', 'password_hash'}
+            password_hash = data.get('passowrd')
+            if password_hash is not None:
+                data['password_hash'] = password_hash
+
+            for key, value in data.items():
+                if hasattr(existing, key) and key in allowed_fields:
+                    if value is not None:
+                        setattr(existing, key, value)
+            
+            await self.session.flush()
             await self.session.commit()
             self.logger.info(f"Update Librarian: {id}")
             return existing

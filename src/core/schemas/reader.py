@@ -67,7 +67,8 @@ class ResponseReaderWithBooks(ShortReaderResponse):
             "title": "Война и мир",
             "author": "Лев Толстой"
         }],
-        description="Список книг, взятых читателем"
+        description="Список книг, взятых читателем",
+        validation_alias="borrow_records"
     )
 
 class ReaderWithRecordsResponse(ShortReaderResponse):

@@ -19,7 +19,7 @@ class ReaderService:
         return [ResponseReader.model_validate(r) for r in readers_db]
     
     async def get_with_borro(self, reader_id: int) -> ReaderWithRecordsResponse:
-        reader_db = await self.repo.get_active_borrow()
+        reader_db = await self.repo.get_active_borrow(reader_id)
         return ReaderWithRecordsResponse.model_validate(reader_db)
 
     async def get_with_borrow_books(self, reader_id: int) -> ResponseReaderWithBooks:

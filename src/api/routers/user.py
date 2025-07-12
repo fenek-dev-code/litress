@@ -18,8 +18,8 @@ router = APIRouter(
 )
 
 @router.post(
-    "/regiser",
-    status_code=status.HTTP_201_CREATED,
+    "/register",
+    status_code=status.HTTP_200_OK,
     summary="Create User"
 )
 async def create_librarian(
@@ -55,13 +55,31 @@ async def login_user(
         access_token=token
     )
 
+
+@router.post(
+    "/login",
+    status_code=status.HTTP_200_OK
+)
+async def login_user(
+    form_data: LogInLibrarian,
+    service: LibrarianService = Depends(librarian_service)  
+) -> Token:
+    result = await service.authenticate(form_data.email, form_data.password)
+    token = encode_jwt(payload={
+        "sub":result.id,
+        "role":"librarian"
+    })
+    return Token(
+        access_token=token
+    )
+
     
 @router.patch(
     "",
-    status_code=status.HTTP_202_ACCEPTED
+    status_code=status.HTTP_200_OK
 )
 async def update_librarian(
-    data: Annotated[UpdateLibrarian, Depends()],
+    data: UpdateLibrarian,
     token: TokenData = Depends(currnet_user),
     service: LibrarianService = Depends(librarian_service)
 ):

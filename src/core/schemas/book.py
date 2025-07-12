@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, validator, ConfigDict
 from datetime import datetime
 from typing import Optional, List
 
@@ -33,8 +33,7 @@ class BaseBook(BaseModel):
         example=5,
         description="Количество доступных копий"
     )
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class CreateBook(BaseBook):
     """"""

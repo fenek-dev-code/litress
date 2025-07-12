@@ -2,6 +2,7 @@ from repository.database.librarian import LibrarianRepository
 from core.models.librarian import Librarian
 from core.schemas.librarian import RegisterLibrarian, LibrarianResponse, LibrarianWithReadersResponse, UpdateLibrarian
 from utils.auth_jwt import hash_password, verefy_passowrd
+from core.exceptions import UserLogInError
 
 class LibrarianService:
     def __init__(self, session):
@@ -14,8 +15,11 @@ class LibrarianService:
         self, 
         librarian: RegisterLibrarian
     ) -> LibrarianResponse:
-        librarian.password = hash_password(librarian.password)
-        db_librarian = await self.repo.create_librarian(**librarian.model_dump())
+        password = hash_password(librarian.password)
+        db_librarian = await self.repo.create_librarian(
+            name=librarian.name, email=librarian.email, 
+            password=password
+        )
         return LibrarianResponse.model_validate(db_librarian)
     
     async def update_librarian(self, id: int, data: UpdateLibrarian) -> LibrarianResponse:
@@ -31,12 +35,14 @@ class LibrarianService:
         password: str
     ) -> LibrarianResponse:
         db_librarian = await self.repo.get_by_email(email=email)
+        if not db_librarian:
+            raise UserLogInError
         if verefy_passowrd(
             payload_password=password, 
             hashed_password=db_librarian.password_hash
         ):
             return LibrarianResponse.model_validate(db_librarian)
-        raise ClientException
+        raise UserLogInError
 
     async def get_with_reader(
         self, 

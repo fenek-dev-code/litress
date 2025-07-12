@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, ConfigDict
 from datetime import datetime
 from typing import List, Optional, TYPE_CHECKING
 
@@ -12,8 +12,8 @@ class BaseLibrarian(BaseModel):
         example="Анна Петрова",
         description="Полное имя библиотекаря"
     )
-    class Config:
-        from_attributes  = True
+    
+    model_config = ConfigDict(from_attributes = True)
 
 class RegisterLibrarian(BaseLibrarian):
     email: EmailStr = Field(
@@ -44,8 +44,9 @@ class LibrarianResponse(BaseLibrarian):
     id: int = Field(..., example=1, description="Уникальный идентификатор библиотекаря", validation_alias="id")
     email: EmailStr = Field(..., example="librarian@example.com")
     created_at: datetime = Field(..., example="2023-01-15T10:30:00Z")
-    class Config:
-        from_attributes = True 
+    
+    model_config = ConfigDict(from_attributes = True)
+        
 
 class ShortLibrarianResponse(BaseLibrarian):
     id: int = Field(..., example=1, validation_alias="id")

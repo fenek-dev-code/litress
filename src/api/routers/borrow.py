@@ -16,7 +16,7 @@ router = APIRouter(
 
 
 @router.post(
-    "/borrow",
+    "",
     status_code=status.HTTP_200_OK
 )
 async def borrow_book(
