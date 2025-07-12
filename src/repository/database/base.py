@@ -27,5 +27,5 @@ class BaseRepository(Generic[ModelType]):
                 delete(self.model).where(self.model.id == id)
             )
             if result.rowcount == 0:
-                raise False
+                return False
             return True

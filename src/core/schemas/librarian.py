@@ -12,7 +12,7 @@ class BaseLibrarian(BaseModel):
         example="Анна Петрова",
         description="Полное имя библиотекаря"
     )
-    
+
     model_config = ConfigDict(from_attributes = True)
 
 class RegisterLibrarian(BaseLibrarian):
@@ -67,7 +67,7 @@ class UpdateLibrarian(BaseModel):
         example="new.email@example.com",
         description="Новый рабочий email"
     )
-    passord: Optional[str] = Field(
+    password: Optional[str] = Field(
         None, 
         min_length=8,
         example="SecureP@ss123",

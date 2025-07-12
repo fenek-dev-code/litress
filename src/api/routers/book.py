@@ -15,7 +15,7 @@ router = APIRouter(
 
 @router.post(
     "",
-    status_code=status.HTTP_201_CREATED
+    status_code=status.HTTP_200_OK
 )
 async def create_book(
     book_data: CreateBook,
@@ -48,7 +48,6 @@ async def delete_book(
     service: BookService = Depends(book_service)
 ):
     return await service.delete_book(book_id=book_id)
-
 
 @router.patch(
     "/{book_id}",

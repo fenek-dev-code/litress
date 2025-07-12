@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from repository.database.book import BookRepository
 from core.models.book import Book
 from core.schemas.book import CreateBook, ResponseBook, UpdateBook, ResponseBookWithBorrow, ShortBookResponse, BookSearchFilters
-
+from core.exceptions import NotFoundError
 
 
 class BookService:
@@ -18,6 +18,8 @@ class BookService:
     
     async def get_book(self, id: int) -> ShortBookResponse:
         db_book = await self.repo.get(id)
+        if not db_book:
+            raise NotFoundError(message=f"Книга {id} не найдена")
         return ShortBookResponse.model_validate(db_book)
 
     async def update_book(self, book_id: int, book: UpdateBook) -> ResponseBook:
@@ -26,7 +28,11 @@ class BookService:
         return ResponseBook.model_validate(new_book)
 
     async def delete_book(self, book_id: int):
-        return await self.repo.delete(book_id) 
+        result = await self.repo.delete(book_id) 
+        print(result)
+        if result:
+            return True
+        raise NotFoundError(f"Книга {book_id} не найдена")
 
     async def get_book_with_borrow(self, book_id: int) -> ResponseBookWithBorrow:
         book = await self.repo.get_book_with_borrow(book_id)
