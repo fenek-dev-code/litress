@@ -15,7 +15,7 @@ router = APIRouter(
 
 @router.post(
     "",
-    status_code=status.HTTP_201_CREATED
+    status_code=status.HTTP_200_OK
 )
 async def create_reader(
     reader: CreateReader,

@@ -1,6 +1,7 @@
 from .base import BaseRepository
 from core.models.order import BorrowRecord
 from core.models.book import Book
+from core.models.reader import Reader
 from sqlalchemy import select, func
 from sqlalchemy.orm import selectinload
 from sqlalchemy.exc import SQLAlchemyError
@@ -21,10 +22,13 @@ class BorrowRepository(BaseRepository[BorrowRecord]):
         try:
             async with self.session.begin():
                 book = await self.session.get(Book, book_id)
+                reader = await self.session.get(Reader, reader_id)
+                if not reader:
+                    raise NotFoundError(message=f"Читатетль {reader_id} не найден!")
                 if not book:
                     raise NotFoundError(message=f"Книга {book_id} не найдена!")
                 if book.copies < 1:
-                    raise NotFoundError(message=f"Книги {book_id} нет в наличии")
+                    raise NotFoundError(message=f"Книги {book_id} нет в наличии!")
                 
                 active_borrows = await self.session.scalar(
                     select(func.count(BorrowRecord.id)).where(
@@ -32,10 +36,18 @@ class BorrowRepository(BaseRepository[BorrowRecord]):
                         BorrowRecord.return_date.is_(None)
                     )
                 )
-
                 if active_borrows >= 3:
                     raise BookLimitError(message=f"У вас слишком много книг, в аренду можно брать не более 3х")
-                
+                book_is_active = await self.session.scalar(
+                    select(BorrowRecord).where(
+                        BorrowRecord.reader_id == reader_id,
+                        BorrowRecord.book_id == book_id,
+                        BorrowRecord.return_date.is_(None)
+                    )
+                )
+                if book_is_active:
+                    raise BookLimitError(message=f"Книга {book_id} уже в аренде у читателя {reader_id}")
+
                 record = BorrowRecord(
                     book_id=book_id,
                     reader_id=reader_id,
@@ -65,7 +77,8 @@ class BorrowRepository(BaseRepository[BorrowRecord]):
         try:
             async with self.session.begin():
                 book = await self.session.get(Book, book_id)
-                if not book:
+                reader = await self.session.get(Reader, reader_id)
+                if not book or not reader:
                     raise NotFoundError(message=f"Заказ не найден")
                 order = (await self.session.execute( 
                     select(BorrowRecord).where(
@@ -73,12 +86,10 @@ class BorrowRepository(BaseRepository[BorrowRecord]):
                         BorrowRecord.reader_id == reader_id,
                         BorrowRecord.return_date.is_(None)  
                 ))).scalar_one_or_none()
-                if not order:
-                    raise NotFoundError(message=f"Заказ не найден")
                 order.return_date = datetime.now()
                 book.copies += 1
-                
                 self.logger.info(f"Книга {book_id} успешно возвращена читателем {reader_id}")
+                return order
         except SQLAlchemyError as e:
             self.logger.error(f"При возрате книги {book_id} читателем {reader_id} произошла ошибка: {e}")
             raise ServerError

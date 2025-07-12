@@ -83,6 +83,7 @@ async def test_update_book_success(async_client, auth_token, created_book):
     assert updated_data["book_id"] == book_id
     assert "created_at" in updated_data
 
+
 @pytest.mark.asyncio
 async def test_delete_book_success(async_client, auth_token, created_book):
     """ Тест успешного удаления книги """

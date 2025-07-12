@@ -52,7 +52,8 @@ async def auth_token(async_client, registered_librarian):
     return response.json()["access_token"]
 
 
-@pytest.fixture
+
+@pytest.fixture(scope="session")
 async def created_book(async_client, auth_token):
     """Фикстура для создания тестовой книги с автоматической очисткой"""
     headers = {"Authorization": f"Bearer {auth_token}"}
@@ -85,3 +86,28 @@ async def created_reader(async_client, auth_token):
 
     reader_id = response_reader.json()['reader_id']
     return reader_id
+
+
+@pytest.fixture(scope="session")
+async def created_borrow(
+    async_client, auth_token, 
+    created_book, created_reader
+):
+    headers = {"Authorization": f"Bearer {auth_token}"}
+    book_id = created_book["book_id"]
+    response = await async_client.post(
+        url="/borrow",
+        json={
+            "book_id": book_id,
+            "reader_id": created_reader,
+            "borrow_date": "2023-01-01",  #
+            "return_date": "2023-02-01"   
+        },
+        headers=headers
+    )
+    if response.status_code != 200:
+        print("Error creating borrow:", response.json())
+        pytest.fail(f"Failed to create borrow: {response.json()}")
+    
+    data = response.json()
+    return data
